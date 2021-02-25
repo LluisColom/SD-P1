@@ -9,7 +9,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 
 WORKER_ID = 1
 
-server = SimpleXMLRPCServer(('localhost',8000), logRequests=True,
+server = SimpleXMLRPCServer(('localhost',8005), logRequests=True,
 	allow_none=True)
 
 def prr(x):

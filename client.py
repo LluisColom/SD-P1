@@ -4,7 +4,7 @@
 # -------------------------------------- #
 import xmlrpc.client
 
-s = xmlrpc.client.ServerProxy('http://localhost:8000')
+s = xmlrpc.client.ServerProxy('http://localhost:8005')
 
 print('CLIENT CREAT, afegint worker...')
 s.add_worker()
