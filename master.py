@@ -3,7 +3,8 @@
 # Programador: Lluís Oriol Colom Nichols #
 # -------------------------------------- #
 import worker
-from multiprocessing import Process
+import multiprocessing as mp
+mp.set_start_method("fork")
 import sys
 from xmlrpc.server import SimpleXMLRPCServer
 
@@ -17,7 +18,7 @@ def prr(x):
 # ------------- Server Functions -------------- #
 def add_worker():
 	global WORKER_ID
-	wkr = Process(target=worker.start_worker, args=(WORKER_ID,))
+	wkr = mp.Process(target=worker.start_worker, args=(WORKER_ID,))
 	wkr.start()
 	print("Worker afegit.")
 	WORKER_ID += 1
