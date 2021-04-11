@@ -4,9 +4,15 @@
 # -------------------------------------- #
 import worker
 import multiprocessing as mp
-mp.set_start_method("fork")
 import sys
 from xmlrpc.server import SimpleXMLRPCServer
+#----------------------------
+import requests
+from redis import Redis
+from rq import Queue
+
+q = Queue(connection=Redis())
+
 
 WORKER_ID = 1
 
@@ -17,11 +23,11 @@ def prr(x):
 	print("RESULT: {}",x)
 # ------------- Server Functions -------------- #
 def add_worker():
-	global WORKER_ID
-	wkr = mp.Process(target=worker.start_worker, args=(WORKER_ID,))
-	wkr.start()
+	#global WORKER_ID
+	#wkr = mp.Process(target=worker.start_worker, args=(WORKER_ID,))
+	#wkr.start()
 	print("Worker afegit.")
-	WORKER_ID += 1
+	#WORKER_ID += 1
 
 def remove_worker(x):
 	#Remove some worker to the cluster.
@@ -31,9 +37,13 @@ def list_worker():
 	#List the workers forming the cluster.
 	pass
 
-def submit_task(x):
+def hello_function(x):
+	print (x)
+	return x
+
+def submit_task():
 	#Submit a task to the cluster.
-	pass
+	result = q.enqueue(hello_function, "jaquemate")
 
 server.register_introspection_functions()
 server.register_function(add_worker)

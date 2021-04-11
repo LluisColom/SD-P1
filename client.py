@@ -8,3 +8,4 @@ s = xmlrpc.client.ServerProxy('http://localhost:8005')
 
 print('CLIENT CREAT, afegint worker...')
 s.add_worker()
+s.submit_task()
