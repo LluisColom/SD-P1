@@ -3,5 +3,15 @@
 # Programador: Lluís Oriol Colom Nichols #
 # -------------------------------------- #
 
+import sys
+from rq import Connection, Worker
+from redis import Redis
+
+import tasks
+
 def start_worker(x):
-	print("Process with id: {} created",x)
+	redis = Redis()
+
+	with Connection():
+		w = Worker(x, connection=redis, name='hola')
+		w.work()

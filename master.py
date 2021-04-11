@@ -13,6 +13,9 @@ from rq import Queue
 
 q = Queue(connection=Redis())
 
+import tasks
+
+#print("REFERENCIA A LA CUA {}".format(q))
 
 WORKER_ID = 1
 
@@ -23,11 +26,11 @@ def prr(x):
 	print("RESULT: {}",x)
 # ------------- Server Functions -------------- #
 def add_worker():
-	#global WORKER_ID
-	#wkr = mp.Process(target=worker.start_worker, args=(WORKER_ID,))
-	#wkr.start()
+	global WORKER_ID
+	wkr = mp.Process(target=worker.start_worker, args=(q,))
+	wkr.start()
 	print("Worker afegit.")
-	#WORKER_ID += 1
+	WORKER_ID += 1
 
 def remove_worker(x):
 	#Remove some worker to the cluster.
@@ -37,16 +40,13 @@ def list_worker():
 	#List the workers forming the cluster.
 	pass
 
-def hello_function(x):
-	print (x)
-	return x
-
-def submit_task():
+def submit_task(x, y):
 	#Submit a task to the cluster.
-	result = q.enqueue(hello_function, "jaquemate")
+	result = q.enqueue(x, y)
 
 server.register_introspection_functions()
 server.register_function(add_worker)
+server.register_function(submit_task)
 server.register_function(remove_worker)
 server.register_function(list_worker)
 
