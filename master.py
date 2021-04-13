@@ -17,6 +17,7 @@ import tasks
 
 #print("REFERENCIA A LA CUA {}".format(q))
 
+WORKER_LIST = {}
 WORKER_ID = 1
 
 server = SimpleXMLRPCServer(('localhost',8005), logRequests=True,
@@ -26,22 +27,22 @@ def prr(x):
 	print("RESULT: {}",x)
 # ------------- Server Functions -------------- #
 def add_worker():
-	global WORKER_ID
 	wkr = mp.Process(target=worker.start_worker, args=(q,))
 	wkr.start()
 	print("Worker afegit.")
 	WORKER_ID += 1
+	WORKER_LIST[WORKER_ID-1] = wkr
 
 def remove_worker(x):
-	#Remove some worker to the cluster.
-	pass
+	if (x in WORKER_LIST):
+		Process = WORKER_LIST(x).terminate()
+		del WORKER_LIST[x]
 
 def list_worker():
-	#List the workers forming the cluster.
-	pass
+	# Si falla pasarlo a string
+	return WORKER_LIST
 
 def submit_task(x, y):
-	#Submit a task to the cluster.
 	result = q.enqueue(x, y)
 
 server.register_introspection_functions()
