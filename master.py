@@ -17,8 +17,8 @@ import tasks
 
 #print("REFERENCIA A LA CUA {}".format(q))
 
-WORKER_LIST = {}
-WORKER_ID = 1
+WORKER_LIST = []
+WORKER_ID = 0
 
 server = SimpleXMLRPCServer(('localhost',8005), logRequests=True,
 	allow_none=True)
@@ -27,20 +27,23 @@ def prr(x):
 	print("RESULT: {}",x)
 # ------------- Server Functions -------------- #
 def add_worker():
+	global WORKER_ID		
+	global WORKER_LIST
 	wkr = mp.Process(target=worker.start_worker, args=(q,))
 	wkr.start()
 	print("Worker afegit.")
 	WORKER_ID += 1
-	WORKER_LIST[WORKER_ID-1] = wkr
+	WORKER_LIST[WORKER_ID-1] = "Worker_" + str(wkr.pid)
 
 def remove_worker(x):
+	global WORKER_LIST
 	if (x in WORKER_LIST):
 		Process = WORKER_LIST(x).terminate()
 		del WORKER_LIST[x]
 
 def list_worker():
-	# Si falla pasarlo a string
-	return WORKER_LIST
+	global WORKER_LIST	# Si falla pasarlo a string
+	return ", ".join(WORKER_LIST)
 
 def submit_task(x, y):
 	result = q.enqueue(x, y)
