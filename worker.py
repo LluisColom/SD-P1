@@ -9,6 +9,8 @@ from redis import Redis
 
 import tasks
 
+# Hacer bucle while (true):
+
 def start_worker(x):
 	redis = Redis()
 

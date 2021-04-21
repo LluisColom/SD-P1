@@ -11,42 +11,63 @@ import requests
 from redis import Redis
 from rq import Queue
 
-q = Queue(connection=Redis())
-
 import tasks
 
-#print("REFERENCIA A LA CUA {}".format(q))
+redisClient = redis.StrictRedis(host='localhost',
 
-WORKER_LIST = []
+                                port=6379,
+
+                                db=0)
+
+WORKER_LIST = {}
 WORKER_ID = 0
 
 server = SimpleXMLRPCServer(('localhost',8005), logRequests=True,
 	allow_none=True)
 
-def prr(x):
-	print("RESULT: {}",x)
 # ------------- Server Functions -------------- #
+
 def add_worker():
 	global WORKER_ID		
 	global WORKER_LIST
-	wkr = mp.Process(target=worker.start_worker, args=(q,))
+	wkr = Process(target=worker.start_worker, args=(WORKER_ID,))
 	wkr.start()
-	print("Worker afegit.")
+	WORKER_LIST[WORKER_ID] = wkr
 	WORKER_ID += 1
-	WORKER_LIST[WORKER_ID-1] = "Worker_" + str(wkr.pid)
+	print("Worker afegit.")
 
 def remove_worker(x):
 	global WORKER_LIST
-	if (x in WORKER_LIST):
-		Process = WORKER_LIST(x).terminate()
-		del WORKER_LIST[x]
+	for proc in WORKER_LIST:
+		if (proc.pid = x):
+			proc.terminate()
+			del WORKER_LIST[proc]
+			print("Worker esborrat.")
 
 def list_worker():
-	global WORKER_LIST	# Si falla pasarlo a string
-	return ", ".join(WORKER_LIST)
+	global WORKER_LIST	
+	x = ""
+	for proc in WORKER_LIST:
+		x += proc.pid + ", "
+	return x # String con los pid de los WORKERS activos
 
-def submit_task(x, y):
-	result = q.enqueue(x, y)
+def submit_task(x, z):
+	redisClient.rpush('Tasks', x, len(z)) # Guardamos en 'Tasks' la tarea a realizar y cuantos arguemtentos tiene
+	for arg in z:
+		redisClient.rpush('Arguments', z) # Guardamos los argumentos en 'Arguments'
+
+def submit_some_tasks(x): # Formato de x = Tarea1, Num_argumentos, Argumento1, Argumento2, ..., Tarea2, Num_argumentos, Argumento1, Argumento2, ...
+	x.split(',')
+	if (len(x) > 0):
+		index = 0
+		while (index != len(x)):	
+			n_arg = x[index+1]
+			redisClient.rpush('Tasks', x[index], n_arg) # Guardamos en 'Tasks' la tarea a realizar y cuantos arguemtentos tiene
+			index = index + 2
+			for i in range (n_arg):
+				arg = x[index]
+				redisClient.rpush('Arguments', arg) # Guardamos los argumentos en 'Arguments'
+				index = index + 1
 
 server.register_introspection_functions()
 server.register_function(add_worker)
