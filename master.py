@@ -6,68 +6,65 @@ import worker
 import multiprocessing as mp
 import sys
 from xmlrpc.server import SimpleXMLRPCServer
+import json
 #----------------------------
 import requests
-from redis import Redis
+import redis
 from rq import Queue
 
 import tasks
 
-redisClient = redis.StrictRedis(host='localhost',
+redisClient = redis.StrictRedis(host='localhost', port=6379, db=0)
 
-                                port=6379,
-
-                                db=0)
-
-WORKER_LIST = {}
+WORKER_LIST = []
 WORKER_ID = 0
+JOB_ID = 0
 
-server = SimpleXMLRPCServer(('localhost',8005), logRequests=True,
-	allow_none=True)
+server = SimpleXMLRPCServer(('localhost',8005), logRequests=True, allow_none=True)
 
 # ------------- Server Functions -------------- #
 
 def add_worker():
 	global WORKER_ID		
 	global WORKER_LIST
-	wkr = Process(target=worker.start_worker, args=(WORKER_ID,))
+	wkr = mp.Process(target=worker.start_worker, args=(WORKER_ID,))
 	wkr.start()
 	WORKER_LIST[WORKER_ID] = wkr
 	WORKER_ID += 1
-	print("Worker afegit.")
+	print("Worker afegit amb pid = ", wkr.pid, ".")
 
 def remove_worker(x):
 	global WORKER_LIST
+
 	for proc in WORKER_LIST:
-		if (proc.pid = x):
+		if (proc.pid in x):
+			WORKER_LIST.remove(proc)
 			proc.terminate()
-			del WORKER_LIST[proc]
-			print("Worker esborrat.")
+			print("Worker amb pid ", proc.pid ," esborrat.")
 
 def list_worker():
 	global WORKER_LIST	
 	x = ""
 	for proc in WORKER_LIST:
-		x += proc.pid + ", "
+		x += proc.pid + "\n"
 	return x # String con los pid de los WORKERS activos
 
-def submit_task(x, z):
-	redisClient.rpush('Tasks', x, len(z)) # Guardamos en 'Tasks' la tarea a realizar y cuantos arguemtentos tiene
-	for arg in z:
-		redisClient.rpush('Arguments', z) # Guardamos los argumentos en 'Arguments'
+def submit_task(x,y):
+	global JOB_ID
+	
+	y.split(';')
+	# Guardamos en 'task_queue' las tareas a realizar.
+	if(len(y) > 1):
+		for arg in y:
+			redisClient.rpush('task_queue', x, JOB_ID)
+			redisClient.rpush('arg_queue', arg)
+		# Harmonice the results.
+	else:
+		redisClient.rpush('task_queue', x, JOB_ID)
+		redisClient.rpush('arg_queue', y)
+	JOB_ID = JOB_ID + 1
 
-def submit_some_tasks(x): # Formato de x = Tarea1, Num_argumentos, Argumento1, Argumento2, ..., Tarea2, Num_argumentos, Argumento1, Argumento2, ...
-	x.split(',')
-	if (len(x) > 0):
-		index = 0
-		while (index != len(x)):	
-			n_arg = x[index+1]
-			redisClient.rpush('Tasks', x[index], n_arg) # Guardamos en 'Tasks' la tarea a realizar y cuantos arguemtentos tiene
-			index = index + 2
-			for i in range (n_arg):
-				arg = x[index]
-				redisClient.rpush('Arguments', arg) # Guardamos los argumentos en 'Arguments'
-				index = index + 1
+
 
 server.register_introspection_functions()
 server.register_function(add_worker)
