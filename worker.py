@@ -4,16 +4,17 @@
 # -------------------------------------- #
 
 import sys
-from rq import Connection, Worker
-from redis import Redis
+import redis
 
 import tasks
 
-# Hacer bucle while (true):
-
 def start_worker(x):
-	redis = Redis()
+	conn = redis.StrictRedis(host='localhost', port=6379, db=0)
+	while (True):
+		job, id = conn.blpop('task_queue')
+		argument = conn.blpop('arg_queue')
 
-	with Connection():
-		w = Worker(x, connection=redis, name='hola')
-		w.work()
+		if (job == tasks.print_function):
+			conn.rpush(id, tasks.print_function(argument))
+		else:
+			conn.rpush(id, tasks.write_file(argument))

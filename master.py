@@ -6,11 +6,9 @@ import worker
 import multiprocessing as mp
 import sys
 from xmlrpc.server import SimpleXMLRPCServer
-import json
 #----------------------------
 import requests
 import redis
-from rq import Queue
 
 import tasks
 
@@ -18,7 +16,7 @@ redisClient = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 WORKER_LIST = []
 WORKER_ID = 0
-JOB_ID = 0
+JOB_ID = 1
 
 server = SimpleXMLRPCServer(('localhost',8005), logRequests=True, allow_none=True)
 
@@ -63,8 +61,6 @@ def submit_task(x,y):
 		redisClient.rpush('task_queue', x, JOB_ID)
 		redisClient.rpush('arg_queue', y)
 	JOB_ID = JOB_ID + 1
-
-
 
 server.register_introspection_functions()
 server.register_function(add_worker)
