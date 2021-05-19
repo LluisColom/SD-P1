@@ -12,12 +12,13 @@ import redis
 
 import tasks
 
-redisClient = redis.StrictRedis(host='localhost', port=6379, db=0)
+print ("Starting server...")
 
 WORKER_LIST = []
 WORKER_ID = 0
 JOB_ID = 1
 
+redisClient = redis.StrictRedis(host='localhost', port=6379, db=0)
 server = SimpleXMLRPCServer(('localhost',8005), logRequests=True, allow_none=True)
 
 # ------------- Server Functions -------------- #
@@ -50,10 +51,10 @@ def list_worker():
 def submit_task(x,y):
 	global JOB_ID
 	
-	y.split(';')
+	split_args = y.split(';')
 	# Guardamos en 'task_queue' las tareas a realizar.
-	if(len(y) > 1):
-		for arg in y:
+	if(len(split_args) > 1):
+		for arg in split_args:
 			redisClient.rpush('task_queue', x, JOB_ID)
 			redisClient.rpush('arg_queue', arg)
 		# Harmonice the results.
@@ -69,6 +70,7 @@ server.register_function(remove_worker)
 server.register_function(list_worker)
 
 # ------------ We start the server ------------ #
+print("Ready to serve queries...")
 try:
 	server.serve_forever()
 
