@@ -8,6 +8,19 @@ import redis
 
 import tasks
 
+conn = None
+id = None
+
+def wordCountMerge(arg):
+	pass
+
+def countWordsMerge(elem_number):
+	sum = 0
+	for i in range(elem_number):
+		sum = sum + conn.blpop(id);	#We wait for the other tasks to finish... then we retrieve their result.
+	
+	return sum
+
 def start_worker(x):
 	conn = redis.StrictRedis(host='localhost', port=6379, db=0)
 	while (True):
@@ -19,3 +32,7 @@ def start_worker(x):
 			conn.rpush(id, tasks.countWords(argument))
 		elif (job == "wordCount"):
 			conn.rpush(id, tasks.wordCount(argument))
+		elif (job == "wordCountMerge"):
+			conn.rpush(id, wordCountMerge(argument))
+		elif (job == "countWordsMerge"):
+			conn.rpush(id, countWordsMerge(argument))

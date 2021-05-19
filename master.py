@@ -8,8 +8,6 @@ from xmlrpc.server import SimpleXMLRPCServer
 #----------------------------
 import redis
 
-import tasks
-
 print ("Starting server...")
 
 WORKER_LIST = []
@@ -55,7 +53,9 @@ def submit_task(x,y):
 		for arg in split_args:
 			redisClient.rpush('task_queue', x, JOB_ID)
 			redisClient.rpush('arg_queue', arg)
-		# Harmonice the results.
+		# Harmonize the results.
+		redisClient.rpush('task_queue', x+str("Merge"), JOB_ID)
+		redisClient.rpush('arg_queue', len(split_args))
 	else:
 		redisClient.rpush('task_queue', x, JOB_ID)
 		redisClient.rpush('arg_queue', y)
@@ -83,4 +83,4 @@ try:
 	server.serve_forever()
 
 except KeyboardInterrupt:
-	print("Leaving...")
+	print("Shutting down...")

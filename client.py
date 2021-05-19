@@ -40,7 +40,7 @@ def read_result():
     if ret_val is not None:
         print("\nThe result of task with id ",selected," is:\n",ret_val)
     else:
-        print("\nError: there is not any job registered in the server with the provided job id: ",selected)
+        print("\nError: no found job in the DB with id: ",selected,". It is possible the task has not finished yet.")
 
 def invalid_option():
     print ("Please, select a valid option.\n")
@@ -66,3 +66,5 @@ while (choice != 0):
     choice = input('Your choice: ')
 
     switch_options.get(choice, invalid_option)()
+
+print("Shutting down...")
