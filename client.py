@@ -2,7 +2,7 @@
 # Programador: David Nada Fernandez		 #
 # Programador: Lluís Oriol Colom Nichols #
 # -------------------------------------- #
-#from master import add_worker, submit_task
+
 import xmlrpc.client
 
 s = xmlrpc.client.ServerProxy('http://localhost:8005',verbose=True)
@@ -21,7 +21,7 @@ def show_menu():
 
 def choose_task():
     print ("\n*************** Submit task **************")
-    function_name = input("Type the function to be executed: (WordCount) (CountWords) ")
+    function_name = input("Type the function to be executed: (wordCount) (countWords) ")
     function_args = input("Enter the task arguments separated by a ';' :")
     print ("Submitting task, please wait...")
     job_id = s.submit_task(function_name,function_args)
@@ -42,9 +42,6 @@ def read_result():
     else:
         print("\nError: there is not any job registered in the server with the provided job id: ",selected)
 
-def get_cluster_workers():
-    pass
-
 def invalid_option():
     print ("Please, select a valid option.\n")
 
@@ -55,6 +52,10 @@ switch_options = {
     '4': s.remove_worker,
     '5': read_result
 }
+
+
+#---------------------------------------- MAIN ----------------------------------------
+
 
 print ("*********** Welcome to Cluster ***********")
 print ("*                                        *")

@@ -4,10 +4,8 @@
 # -------------------------------------- #
 import worker
 import multiprocessing as mp
-import sys
 from xmlrpc.server import SimpleXMLRPCServer
 #----------------------------
-import requests
 import redis
 
 import tasks
@@ -74,6 +72,9 @@ server.register_function(remove_worker)
 server.register_function(list_worker)
 server.register_function(submit_task)
 server.register_function(check_result)
+
+
+#---------------------------------------- MAIN ----------------------------------------
 
 
 # ------------ We start the server ------------ #

@@ -14,7 +14,8 @@ def start_worker(x):
 		job, id = conn.blpop('task_queue')
 		argument = conn.blpop('arg_queue')
 
-		if (job == tasks.print_function):
-			conn.rpush(id, tasks.print_function(argument))
-		else:
-			conn.rpush(id, tasks.write_file(argument))
+		# We execute the task and store the result in the redis DB.
+		if (job == "countWords"):
+			conn.rpush(id, tasks.countWords(argument))
+		elif (job == "wordCount"):
+			conn.rpush(id, tasks.wordCount(argument))
