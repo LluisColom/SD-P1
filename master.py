@@ -61,13 +61,20 @@ def submit_task(x,y):
 	else:
 		redisClient.rpush('task_queue', x, JOB_ID)
 		redisClient.rpush('arg_queue', y)
+	
 	JOB_ID = JOB_ID + 1
+	return JOB_ID-1
+
+def check_result(x):
+	return redisClient.lpop(x)
 
 server.register_introspection_functions()
 server.register_function(add_worker)
-server.register_function(submit_task)
 server.register_function(remove_worker)
 server.register_function(list_worker)
+server.register_function(submit_task)
+server.register_function(check_result)
+
 
 # ------------ We start the server ------------ #
 print("Ready to serve queries...")

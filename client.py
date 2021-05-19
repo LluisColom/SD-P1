@@ -1,4 +1,4 @@
-# -------------------------------------- #										 #
+# -------------------------------------- #										 
 # Programador: David Nada Fernandez		 #
 # Programador: Lluís Oriol Colom Nichols #
 # -------------------------------------- #
@@ -7,10 +7,16 @@ import xmlrpc.client
 
 s = xmlrpc.client.ServerProxy('http://localhost:8005',verbose=True)
 
+TASKS_ID = []
+
 def show_menu():
     print ("* Which action do you want to perform?   *")
-    print ("*  1 - Submit a task to the cluster.     *")
+    print ("*  0 - Exit.                             *")
+    print ("*  1 - Submit a task.                    *")
     print ("*  2 - Add worker.                       *")
+    print ("*  3 - List workers.                     *")
+    print ("*  4 - Remove worker.                    *")
+    print ("*  5 - Read task result.                 *")
     print ("******************************************")
 
 def choose_task():
@@ -20,6 +26,21 @@ def choose_task():
     print ("Submitting task, please wait...")
     job_id = s.submit_task(function_name,function_args)
     print("Your task is being processed by the cluster. Use its job_id: ",job_id," to get the result once finished.")
+    if job_id is not None:
+        TASKS_ID.append(job_id)
+
+def read_result():
+    print ("\n*************** Read result **************")
+    print ("Created tasks (shown by ID):")
+    for tsk in TASKS_ID:
+        print(tsk)
+    
+    selected = input ("\nChoose the task ID which you want to know the result: ")
+    ret_val = s.check_result(selected)
+    if ret_val is not None:
+        print("\nThe result of task with id ",selected," is:\n",ret_val)
+    else:
+        print("\nError: there is not any job registered in the server with the provided job id: ",selected)
 
 def get_cluster_workers():
     pass
@@ -29,13 +50,16 @@ def invalid_option():
 
 switch_options = {
     '1': choose_task,
-    '2': s.add_worker
+    '2': s.add_worker,
+    '3': s.list_worker,
+    '4': s.remove_worker,
+    '5': read_result
 }
 
 print ("*********** Welcome to Cluster ***********")
 print ("*                                        *")
-kill_program = 0
-while (kill_program == 0):
+choice = -1
+while (choice != 0):
     
     show_menu()
     choice = input('Your choice: ')
