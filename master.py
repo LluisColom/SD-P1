@@ -24,9 +24,10 @@ def add_worker():
 	global WORKER_LIST
 	wkr = mp.Process(target=worker.start_worker, args=(WORKER_ID,))
 	wkr.start()
-	WORKER_LIST[WORKER_ID] = wkr
+	WORKER_LIST.append(wkr)
 	WORKER_ID += 1
 	print("Worker afegit amb pid = ", wkr.pid, ".")
+	return "Worker succesfully added."
 
 def remove_worker(x):
 	global WORKER_LIST
@@ -36,12 +37,14 @@ def remove_worker(x):
 			WORKER_LIST.remove(proc)
 			proc.terminate()
 			print("Worker amb pid ", proc.pid ," esborrat.")
+			return "Worker succesfully removed"
+	return "Worker was not removed"
 
 def list_worker():
 	global WORKER_LIST	
 	x = ""
 	for proc in WORKER_LIST:
-		x += proc.pid + "\n"
+		x += str(proc.pid) + "\n"
 	return x # String con los pid de los WORKERS activos
 
 def submit_task(x,y):

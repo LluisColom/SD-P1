@@ -9,15 +9,7 @@ s = xmlrpc.client.ServerProxy('http://localhost:8005',verbose=True)
 
 TASKS_ID = []
 
-def show_menu():
-    print ("* Which action do you want to perform?   *")
-    print ("*  0 - Exit.                             *")
-    print ("*  1 - Submit a task.                    *")
-    print ("*  2 - Add worker.                       *")
-    print ("*  3 - List workers.                     *")
-    print ("*  4 - Remove worker.                    *")
-    print ("*  5 - Read task result.                 *")
-    print ("******************************************")
+#---------------------------------- SWITCH OPTIONS ----------------------------------
 
 def choose_task():
     print ("\n*************** Submit task **************")
@@ -40,22 +32,39 @@ def read_result():
     if ret_val is not None:
         print("\nThe result of task with id ",selected," is:\n",ret_val)
     else:
-        print("\nError: no found job in the DB with id: ",selected,". It is possible the task has not finished yet.")
+        print("\nError: no found job in the DB with id: ",selected,". It is possible that the task has not finished yet.")
 
 def invalid_option():
-    print ("Please, select a valid option.\n")
+    print("Please, select a valid option.\n")
+
+def add_worker():
+    print(s.add_worker)
+
+def rem_worker():
+    print(s.remove_worker)
+
+def print_workers():
+    print(s.list_worker)
 
 switch_options = {
     '1': choose_task,
-    '2': s.add_worker,
-    '3': s.list_worker,
-    '4': s.remove_worker,
+    '2': add_worker,
+    '3': print_workers,
+    '4': add_worker,
     '5': read_result
 }
 
-
 #---------------------------------------- MAIN ----------------------------------------
 
+def show_menu():
+    print ("* Which action do you want to perform?   *")
+    print ("*  0 - Exit.                             *")
+    print ("*  1 - Submit a task.                    *")
+    print ("*  2 - Add worker.                       *")
+    print ("*  3 - List workers.                     *")
+    print ("*  4 - Remove worker.                    *")
+    print ("*  5 - Read task result.                 *")
+    print ("******************************************")
 
 print ("*********** Welcome to Cluster ***********")
 print ("*                                        *")
