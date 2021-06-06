@@ -5,63 +5,71 @@
 import worker
 import multiprocessing as mp
 from xmlrpc.server import SimpleXMLRPCServer
-#----------------------------
 import redis
 
-print ("Starting server...")
-
-WORKER_LIST = []
+WORKER_LIST = {}
 WORKER_ID = 0
 JOB_ID = 1
 
+# ---------------------------- Connex Establishment ----------------------------- #
+print ("Starting server...")
 redisClient = redis.StrictRedis(host='localhost', port=6379, db=0)
-server = SimpleXMLRPCServer(('localhost',8005), logRequests=True, allow_none=True)
+server = SimpleXMLRPCServer(('localhost',8005), allow_none=True)
+server.register_introspection_functions()
 
-# ------------- Server Functions -------------- #
-
+# ------------------------------ Server Functions ------------------------------- #
 def add_worker():
 	global WORKER_ID		
 	global WORKER_LIST
 	wkr = mp.Process(target=worker.start_worker, args=(WORKER_ID,))
 	wkr.start()
-	WORKER_LIST.append(wkr)
+
+	id = "W-"+str(WORKER_ID)
+	WORKER_LIST[id] = wkr
 	WORKER_ID += 1
-	print("Worker afegit amb pid = ", wkr.pid, ".")
-	return "Worker succesfully added."
+	return "Worker with ID {} succesfully added.".format(id)
 
 def remove_worker(x):
 	global WORKER_LIST
+	log = ""
+	 
+	for id in x.split(" "):
+		
+		if id in WORKER_LIST.keys():
+			WORKER_LIST[id].terminate()
+			del WORKER_LIST[id]
+			log = log + "Worker with ID {} removed.".format(id) + "\n"
+		else:
+			log = log + "No worker with ID {} found.".format(id) + "\n"
 
-	for proc in WORKER_LIST:
-		if (proc.pid in x):
-			WORKER_LIST.remove(proc)
-			proc.terminate()
-			print("Worker amb pid ", proc.pid ," esborrat.")
-			return "Worker succesfully removed"
-	return "Worker was not removed"
+	return log
 
 def list_worker():
 	global WORKER_LIST	
 	x = ""
-	for proc in WORKER_LIST:
-		x += str(proc.pid) + "\n"
-	return x # String con los pid de los WORKERS activos
+	for wkr in WORKER_LIST.keys():
+		x = x + wkr + "\n"
+	
+	if len(x) == 0:
+		return "No active workers."
+	else:
+		return x # String con los pid de los WORKERS activos
 
 def submit_task(x,y):
 	global JOB_ID
-	
-	split_args = y.split(';')
+	split_args = y.split(' ')
 	# Guardamos en 'task_queue' las tareas a realizar.
 	if(len(split_args) > 1):
 		for arg in split_args:
 			redisClient.rpush('task_queue', x, JOB_ID)
-			redisClient.rpush('arg_queue', arg)
+			redisClient.rpush('arg_queue', "http://localhost:8000/"+arg)
 		# Harmonize the results.
 		redisClient.rpush('task_queue', x+str("Merge"), JOB_ID)
-		redisClient.rpush('arg_queue', len(split_args))
+		num_elem = len (split_args)
+		redisClient.rpush('arg_queue', num_elem)
 	else:
 		redisClient.rpush('task_queue', x, JOB_ID)
-		redisClient.rpush('arg_queue', y)
+		redisClient.rpush('arg_queue', "http://localhost:8000/"+y)
 	
 	JOB_ID = JOB_ID + 1
 	return JOB_ID-1
@@ -69,7 +77,7 @@ def submit_task(x,y):
 def check_result(x):
 	return redisClient.lpop(x)
 
-server.register_introspection_functions()
+
 server.register_function(add_worker)
 server.register_function(remove_worker)
 server.register_function(list_worker)
@@ -82,6 +90,7 @@ server.register_function(check_result)
 
 # ------------ We start the server ------------ #
 print("Ready to serve queries...")
+
 try:
 	server.serve_forever()
 
